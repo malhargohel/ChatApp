@@ -30,7 +30,6 @@
 
     <div id="app-container" class="w-full max-w-2xl mx-auto bg-white dark:bg-gray-800 shadow-2xl rounded-2xl flex flex-col h-[90vh]">
 
-        <!-- Join Screen -->
         <div id="join-screen" class="flex flex-col items-center justify-center p-8 h-full">
             <h1 class="text-4xl font-bold mb-2 text-gray-800 dark:text-white">Chat Rooms</h1>
             <p class="text-gray-600 dark:text-gray-400 mb-8">Join a room to start chatting!</p>
@@ -41,11 +40,16 @@
                 </div>
                 <div class="mb-6">
                     <label for="room-id-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Room ID</label>
-                    <input type="text" id="room-id-input" class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition" placeholder="Enter a room ID">
+                    <input type="text" id="room-id-input" class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition" placeholder="Enter or create a room ID">
                 </div>
-                <button id="join-btn" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/50 transition-transform transform hover:scale-105">
-                    Join Chat
-                </button>
+                <div class="space-y-3">
+                    <button id="join-btn" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/50 transition-transform transform hover:scale-105">
+                        Join Chat
+                    </button>
+                    <button id="create-btn" class="w-full bg-gray-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-500/50 transition-transform transform hover:scale-105">
+                        Create New Room
+                    </button>
+                </div>
             </div>
              <div class="mt-8 text-center">
                 <p class="text-sm text-gray-500 dark:text-gray-400">Your User ID:</p>
@@ -53,9 +57,7 @@
             </div>
         </div>
 
-        <!-- Chat Screen -->
         <div id="chat-screen" class="hidden flex-col h-full">
-            <!-- Header -->
             <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 shadow-sm">
                 <h2 class="text-xl font-bold">Room: <span id="room-id-display" class="text-indigo-500"></span></h2>
                 <button id="leave-btn" class="bg-red-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-600 focus:outline-none focus:ring-4 focus:ring-red-500/50 transition">
@@ -63,12 +65,9 @@
                 </button>
             </div>
 
-            <!-- Messages -->
             <div id="chat-messages" class="flex-1 p-4 overflow-y-auto">
-                <!-- Messages will be dynamically inserted here -->
-            </div>
+                </div>
 
-            <!-- Message Input -->
             <div class="p-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-700">
                 <form id="message-form" class="flex items-center space-x-3">
                     <input type="text" id="message-input" class="flex-1 w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-full focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition" placeholder="Type your message..." autocomplete="off">
@@ -83,13 +82,14 @@
     <script type="module">
         // --- Firebase Imports ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, collection, addDoc, onSnapshot, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, serverTimestamp, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- DOM Elements ---
         const joinScreen = document.getElementById('join-screen');
         const chatScreen = document.getElementById('chat-screen');
         const joinBtn = document.getElementById('join-btn');
+        const createBtn = document.getElementById('create-btn'); // New button
         const leaveBtn = document.getElementById('leave-btn');
         const nameInput = document.getElementById('name-input');
         const roomIdInput = document.getElementById('room-id-input');
@@ -99,62 +99,47 @@
         const roomIdDisplay = document.getElementById('room-id-display');
         const userIdDisplay = document.getElementById('user-id-display');
 
-
         // --- App State ---
         let db;
         let auth;
         let currentUser = null;
         let currentRoomId = null;
-        let unsubscribeMessages = null; // To store the listener detachment function
+        let unsubscribeMessages = null;
+
+        // --- Firebase Configuration ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyAOaBjDdo5N7fPUTMqZ2aXZkn0JmK-5MpY",
+            authDomain: "chatapp-2e099.firebaseapp.com",
+            projectId: "chatapp-2e099",
+            storageBucket: "chatapp-2e099.appspot.com",
+            messagingSenderId: "515625798757",
+            appId: "1:515625798757:web:a6a52b310493c658f84a8c"
+        };
+
 
         // --- Firebase Initialization ---
         async function initializeFirebase() {
             try {
-                // These global variables are provided by the environment.
-                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-chat-app';
-                const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-
-                if (!firebaseConfig.apiKey) {
-                    showError("Firebase configuration is missing. This app cannot connect to the backend.");
+                if (firebaseConfig.apiKey === "YOUR_API_KEY") {
+                    showError("Firebase configuration is missing. Please add your project's config to the script.");
                     return;
                 }
-
                 const app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
-
-                // Listen for authentication state changes.
-                onAuthStateChanged(auth, async (user) => {
-                    if (user) {
-                        // User is signed in.
-                        currentUser = user;
-                        userIdDisplay.textContent = currentUser.uid;
-                    } else {
-                        // User is signed out, try to sign in.
-                        await authenticateUser();
-                    }
-                });
-
+                await signInAnonymously(auth);
+                currentUser = auth.currentUser;
+                if (currentUser) {
+                    userIdDisplay.textContent = currentUser.uid;
+                } else {
+                     showError("Authentication failed. Please try again.");
+                }
             } catch (error) {
                 console.error("Error initializing Firebase:", error);
                 showError("Could not initialize the application. Please check the console for details.");
             }
         }
         
-        async function authenticateUser() {
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch (error) {
-                console.error("Authentication failed:", error);
-                showError("Could not authenticate the user.");
-            }
-        }
-
-
         // --- UI Functions ---
         function showChatScreen() {
             joinScreen.classList.add('hidden');
@@ -170,15 +155,29 @@
         }
         
         function showError(message) {
-            // A simple, non-blocking error display.
             const errorDiv = document.createElement('div');
-            errorDiv.className = 'absolute top-5 left-1/2 -translate-x-1/2 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg';
+            errorDiv.className = 'absolute top-5 left-1/2 -translate-x-1/2 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
             errorDiv.textContent = message;
             document.body.appendChild(errorDiv);
             setTimeout(() => errorDiv.remove(), 5000);
         }
 
         // --- Chat Logic ---
+        function generateRoomId() {
+            return Math.random().toString(36).substring(2, 8).toUpperCase();
+        }
+
+        function createChatRoom() {
+            const name = nameInput.value.trim();
+            if (!name) {
+                showError("Please enter your name first.");
+                return;
+            }
+            const newRoomId = generateRoomId();
+            roomIdInput.value = newRoomId;
+            joinChatRoom();
+        }
+
         function joinChatRoom() {
             const name = nameInput.value.trim();
             const roomId = roomIdInput.value.trim();
@@ -194,21 +193,19 @@
             }
 
             currentRoomId = roomId;
-            localStorage.setItem('chat_username', name); // Save name for convenience
-
+            localStorage.setItem('chat_username', name);
             roomIdDisplay.textContent = currentRoomId;
             showChatScreen();
             listenForMessages();
         }
 
         function leaveChatRoom() {
-            // Detach the Firestore listener to stop receiving updates.
             if (unsubscribeMessages) {
                 unsubscribeMessages();
                 unsubscribeMessages = null;
             }
             currentRoomId = null;
-            chatMessages.innerHTML = ''; // Clear messages from the UI
+            chatMessages.innerHTML = '';
             showJoinScreen();
         }
 
@@ -221,16 +218,14 @@
             const name = localStorage.getItem('chat_username') || 'Anonymous';
             
             try {
-                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-chat-app';
-                const messagesCollectionPath = `/artifacts/${appId}/public/data/chatRooms/${currentRoomId}/messages`;
-
+                const messagesCollectionPath = `/artifacts/global/public/data/chatRooms/${currentRoomId}/messages`;
                 await addDoc(collection(db, messagesCollectionPath), {
                     text: messageText,
                     senderName: name,
                     senderId: currentUser.uid,
-                    timestamp: serverTimestamp() // Use server time for consistency
+                    timestamp: serverTimestamp()
                 });
-                messageInput.value = ''; // Clear input field
+                messageInput.value = '';
             } catch (error) {
                 console.error("Error sending message:", error);
                 showError("Could not send your message.");
@@ -240,21 +235,14 @@
         function listenForMessages() {
             if (!currentRoomId) return;
             
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-chat-app';
-            const messagesCollectionPath = `/artifacts/${appId}/public/data/chatRooms/${currentRoomId}/messages`;
+            const messagesCollectionPath = `/artifacts/global/public/data/chatRooms/${currentRoomId}/messages`;
+            const q = query(collection(db, messagesCollectionPath), orderBy("timestamp"));
 
-            const q = query(collection(db, messagesCollectionPath));
-
-            // onSnapshot returns an unsubscribe function.
             unsubscribeMessages = onSnapshot(q, (querySnapshot) => {
                 const messages = [];
                 querySnapshot.forEach((doc) => {
                     messages.push({ id: doc.id, ...doc.data() });
                 });
-                
-                // Sort messages by timestamp client-side
-                messages.sort((a, b) => (a.timestamp?.toMillis() || 0) - (b.timestamp?.toMillis() || 0));
-
                 displayMessages(messages);
             }, (error) => {
                 console.error("Error listening for messages: ", error);
@@ -263,7 +251,7 @@
         }
 
         function displayMessages(messages) {
-            chatMessages.innerHTML = ''; // Clear existing messages
+            chatMessages.innerHTML = '';
             messages.forEach(msg => {
                 const isCurrentUser = msg.senderId === currentUser.uid;
                 const messageElement = document.createElement('div');
@@ -273,24 +261,22 @@
                     <div class="max-w-xs md:max-w-md">
                         <div class="text-xs text-gray-500 dark:text-gray-400 mb-1 ${isCurrentUser ? 'text-right' : 'text-left'}">${msg.senderName}</div>
                         <div class="px-4 py-3 rounded-2xl ${isCurrentUser ? 'bg-indigo-500 text-white rounded-br-none' : 'bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-bl-none'}">
-                            <p class="text-sm">${msg.text}</p>
+                            <p class="text-sm break-words">${msg.text}</p>
                         </div>
                     </div>
                 `;
                 messageElement.innerHTML = messageContent;
                 chatMessages.appendChild(messageElement);
             });
-            // Auto-scroll to the bottom
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
-
         // --- Event Listeners ---
         joinBtn.addEventListener('click', joinChatRoom);
+        createBtn.addEventListener('click', createChatRoom); // New event listener
         leaveBtn.addEventListener('click', leaveChatRoom);
         messageForm.addEventListener('submit', sendMessage);
         
-        // Load saved username
         window.addEventListener('load', () => {
             nameInput.value = localStorage.getItem('chat_username') || '';
             initializeFirebase();

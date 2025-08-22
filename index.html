@@ -13,6 +13,14 @@
         #chat-messages::-webkit-scrollbar-track { background: #f1f1f1; }
         #chat-messages::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
         #chat-messages::-webkit-scrollbar-thumb:hover { background: #555; }
+        .password-container { position: relative; }
+        .password-toggle {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+        }
     </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex items-center justify-center min-h-screen">
@@ -22,15 +30,19 @@
         <!-- Auth Screen -->
         <div id="auth-screen" class="flex flex-col items-center justify-center p-8 h-full">
             <h1 class="text-4xl font-bold mb-2 text-gray-800 dark:text-white">Welcome to Chat</h1>
-            <p class="text-gray-600 dark:text-gray-400 mb-8">Sign up or log in to continue</p>
+            <p class="text-gray-600 dark:text-gray-400 mb-8">Log in to continue</p>
             <div class="w-full max-w-sm">
                 <div class="mb-4">
                     <label for="email-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email</label>
                     <input type="email" id="email-input" class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="your@email.com">
                 </div>
-                <div class="mb-6">
+                <div class="mb-6 password-container">
                     <label for="password-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password</label>
                     <input type="password" id="password-input" class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="••••••••">
+                    <span id="login-password-toggle" class="password-toggle text-gray-400">
+                        <svg id="eye-icon-login" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        <svg id="eye-off-icon-login" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path><line x1="2" x2="22" y1="2" y2="22"></line></svg>
+                    </span>
                 </div>
                 <div class="flex space-x-2">
                     <button id="login-btn" class="flex-1 bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700">Login</button>
@@ -38,10 +50,10 @@
                 </div>
             </div>
         </div>
-
+        
         <!-- Room Selection Screen -->
         <div id="room-screen" class="hidden flex-col items-center justify-center p-8 h-full">
-            <div class="w-full flex justify-between items-center mb-8">
+             <div class="w-full flex justify-between items-center mb-8">
                  <h1 class="text-3xl font-bold">Public Rooms</h1>
                  <button id="logout-btn" class="bg-red-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-600">Logout</button>
             </div>
@@ -54,7 +66,10 @@
                     <label for="room-id-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Room ID</label>
                     <input type="text" id="room-id-input" class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border rounded-lg" placeholder="Enter or create a room ID">
                 </div>
-                <button id="join-btn" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700">Join Room</button>
+                <div class="space-y-3">
+                    <button id="join-btn" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700">Join Room</button>
+                    <button id="create-room-btn" class="w-full bg-gray-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-gray-700">Create New Room</button>
+                </div>
             </div>
         </div>
 
@@ -88,13 +103,46 @@
         </div>
     </div>
 
+    <!-- Signup Modal -->
+    <div id="signup-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-sm">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Create Account</h2>
+                <button id="close-modal-btn" class="text-gray-400 hover:text-gray-600 text-3xl">&times;</button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label for="signup-username" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Username</label>
+                    <input type="text" id="signup-username" class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border rounded-lg" placeholder="Choose a username">
+                </div>
+                <div>
+                    <label for="signup-email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email</label>
+                    <input type="email" id="signup-email" class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border rounded-lg" placeholder="your@email.com">
+                </div>
+                <div class="password-container">
+                    <label for="signup-password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password</label>
+                    <input type="password" id="signup-password" class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border rounded-lg" placeholder="Create a password">
+                    <span id="signup-password-toggle" class="password-toggle text-gray-400">
+                         <svg id="eye-icon-signup" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        <svg id="eye-off-icon-signup" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path><line x1="2" x2="22" y1="2" y2="22"></line></svg>
+                    </span>
+                </div>
+                <div class="password-container">
+                    <label for="signup-reenter-password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Re-enter Password</label>
+                    <input type="password" id="signup-reenter-password" class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border rounded-lg" placeholder="Confirm your password">
+                </div>
+                <button id="create-account-btn" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700">Create Account</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         // Firebase Imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, collection, addDoc, onSnapshot, query, serverTimestamp, orderBy, setDoc, deleteDoc, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, collection, addDoc, onSnapshot, query, serverTimestamp, orderBy, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Firebase Config - IMPORTANT: REPLACE WITH YOUR OWN
+        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyAOaBjDdo5N7fPUTMqZ2aXZkn0JmK-5MpY",
             authDomain: "chatapp-2e099.firebaseapp.com",
@@ -103,18 +151,48 @@
             messagingSenderId: "515625798757",
             appId: "1:515625798757:web:a6a52b310493c658f84a8c"
         };
+        
+        // =================================================================================
+        // FIX FOR PERMISSION ERRORS
+        // The "Missing or insufficient permissions" error is caused by your
+        // Firestore Security Rules. Please go to your Firebase project:
+        // Firestore Database -> Rules -> Edit Rules
+        // And replace the existing rules with the following:
+        /*
+        
+        rules_version = '2';
+        service cloud.firestore {
+          match /databases/{database}/documents {
+        
+            // Allow any authenticated user to access public rooms and their subcollections
+            match /publicRooms/{roomId}/{document=**} {
+              allow read, write: if request.auth != null;
+            }
+        
+            // Allow only the participants of a private chat to access its subcollections
+            // (messages, presence, typing)
+            match /privateChats/{chatId}/{subcollection}/{docId} {
+              allow read, write: if request.auth != null && request.auth.uid in chatId.split('_');
+            }
+          }
+        }
+
+        */
+        // =================================================================================
+
 
         // DOM Elements
         const authScreen = document.getElementById('auth-screen');
         const roomScreen = document.getElementById('room-screen');
         const chatScreen = document.getElementById('chat-screen');
-        // ... other elements
+        const signupModal = document.getElementById('signup-modal');
         const emailInput = document.getElementById('email-input');
         const passwordInput = document.getElementById('password-input');
         const loginBtn = document.getElementById('login-btn');
         const signupBtn = document.getElementById('signup-btn');
         const logoutBtn = document.getElementById('logout-btn');
         const joinBtn = document.getElementById('join-btn');
+        const createRoomBtn = document.getElementById('create-room-btn');
         const leaveBtn = document.getElementById('leave-btn');
         const nameInput = document.getElementById('name-input');
         const roomIdInput = document.getElementById('room-id-input');
@@ -124,10 +202,16 @@
         const roomIdDisplay = document.getElementById('room-id-display');
         const userList = document.getElementById('user-list');
         const typingIndicator = document.getElementById('typing-indicator');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const createAccountBtn = document.getElementById('create-account-btn');
+        const signupUsernameInput = document.getElementById('signup-username');
+        const signupEmailInput = document.getElementById('signup-email');
+        const signupPasswordInput = document.getElementById('signup-password');
+        const signupReenterPasswordInput = document.getElementById('signup-reenter-password');
 
         // App State
         let db, auth, currentUser = null;
-        let currentRoom = { id: null, type: null }; // type can be 'public' or 'private'
+        let currentRoom = { id: null, type: null };
         let unsubscribe = { messages: null, presence: null, typing: null };
         let typingTimeout = null;
 
@@ -161,24 +245,88 @@
             document.getElementById(`${screenName}-screen`).classList.add('flex');
         }
 
-        // --- Authentication ---
-        signupBtn.addEventListener('click', async () => {
-            try {
-                await createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
-            } catch (error) { showError(error.message); }
+        // --- Password Visibility Toggle ---
+        function setupPasswordToggle(toggleId, inputId, eyeId, eyeOffId) {
+            const toggle = document.getElementById(toggleId);
+            const input = document.getElementById(inputId);
+            const eyeIcon = document.getElementById(eyeId);
+            const eyeOffIcon = document.getElementById(eyeOffId);
+
+            toggle.addEventListener('click', () => {
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    eyeIcon.classList.add('hidden');
+                    eyeOffIcon.classList.remove('hidden');
+                } else {
+                    input.type = 'password';
+                    eyeIcon.classList.remove('hidden');
+                    eyeOffIcon.classList.add('hidden');
+                }
+            });
+        }
+        setupPasswordToggle('login-password-toggle', 'password-input', 'eye-icon-login', 'eye-off-icon-login');
+        setupPasswordToggle('signup-password-toggle', 'signup-password', 'eye-icon-signup', 'eye-off-icon-signup');
+
+        // --- Authentication & Modal ---
+        signupBtn.addEventListener('click', () => {
+            signupModal.classList.remove('hidden');
         });
 
-        loginBtn.addEventListener('click', async () => {
+        closeModalBtn.addEventListener('click', () => {
+            signupModal.classList.add('hidden');
+        });
+
+        createAccountBtn.addEventListener('click', async () => {
+            const username = signupUsernameInput.value.trim();
+            const email = signupEmailInput.value.trim();
+            const password = signupPasswordInput.value.trim();
+            const reenterPassword = signupReenterPasswordInput.value.trim();
+
+            if (!username || !email || !password || !reenterPassword) {
+                return showError("Please fill out all fields.");
+            }
+            if (password !== reenterPassword) {
+                return showError("Passwords do not match.");
+            }
+
             try {
-                await signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
+                await createUserWithEmailAndPassword(auth, email, password);
+                localStorage.setItem('chat_username', username);
+                signupModal.classList.add('hidden');
+            } catch (error) {
+                showError(error.message);
+            }
+        });
+        
+        loginBtn.addEventListener('click', async () => {
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+            if (!email || !password) {
+                showError("Please enter a valid email and password.");
+                return;
+            }
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
             } catch (error) { showError(error.message); }
         });
 
         logoutBtn.addEventListener('click', () => signOut(auth));
-
+        
         // --- Chat Room Logic ---
         joinBtn.addEventListener('click', () => joinRoom(roomIdInput.value.trim(), 'public'));
+        createRoomBtn.addEventListener('click', createChatRoom);
         leaveBtn.addEventListener('click', leaveRoom);
+
+        function createChatRoom() {
+            const name = nameInput.value.trim();
+            if (!name) {
+                showError("Please enter your display name first.");
+                return;
+            }
+            const newRoomId = Math.random().toString(36).substring(2, 8).toUpperCase();
+            roomIdInput.value = newRoomId;
+            joinRoom(newRoomId, 'public');
+        }
 
         async function joinRoom(roomId, type) {
             const name = nameInput.value.trim();
@@ -192,7 +340,6 @@
             
             const basePath = type === 'public' ? `publicRooms/${roomId}` : `privateChats/${roomId}`;
             
-            // Set presence
             await setDoc(doc(db, `${basePath}/presence/${currentUser.uid}`), { name, online: true });
 
             listenForMessages();
@@ -264,7 +411,7 @@
         // --- Presence & User List ---
         function listenForPresence() {
             if (currentRoom.type !== 'public') {
-                userList.innerHTML = ''; // Only show user list for public rooms
+                userList.innerHTML = '';
                 return;
             }
             const presenceRef = collection(db, `publicRooms/${currentRoom.id}/presence`);
@@ -272,7 +419,7 @@
                 userList.innerHTML = '';
                 snapshot.forEach(doc => {
                     const user = doc.data();
-                    if (doc.id === currentUser.uid) return; // Don't list self
+                    if (doc.id === currentUser.uid) return;
                     const userEl = document.createElement('div');
                     userEl.className = 'p-2 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md';
                     userEl.textContent = user.name;
@@ -284,7 +431,6 @@
         
         function startPrivateChat(otherUserId, otherUserName) {
             const myId = currentUser.uid;
-            // Create a consistent room ID for the private chat
             const privateRoomId = [myId, otherUserId].sort().join('_');
             roomIdInput.value = `Private chat with ${otherUserName}`;
             joinRoom(privateRoomId, 'private');

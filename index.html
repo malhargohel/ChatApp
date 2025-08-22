@@ -3,110 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Real-Time Chat App</title>
+    <title>Advanced Chat App</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        /* Simple scrollbar styling */
-        #chat-messages::-webkit-scrollbar {
-            width: 8px;
-        }
-        #chat-messages::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-        #chat-messages::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 4px;
-        }
-        #chat-messages::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
+        body { font-family: 'Inter', sans-serif; }
+        .chat-container { display: grid; grid-template-columns: 250px 1fr; }
+        #chat-messages::-webkit-scrollbar { width: 8px; }
+        #chat-messages::-webkit-scrollbar-track { background: #f1f1f1; }
+        #chat-messages::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
+        #chat-messages::-webkit-scrollbar-thumb:hover { background: #555; }
     </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex items-center justify-center min-h-screen">
 
-    <div id="app-container" class="w-full max-w-2xl mx-auto bg-white dark:bg-gray-800 shadow-2xl rounded-2xl flex flex-col h-[90vh]">
+    <div id="app-container" class="w-full max-w-4xl mx-auto bg-white dark:bg-gray-800 shadow-2xl rounded-2xl flex flex-col h-[90vh]">
 
-        <div id="join-screen" class="flex flex-col items-center justify-center p-8 h-full">
-            <h1 class="text-4xl font-bold mb-2 text-gray-800 dark:text-white">Chat Rooms</h1>
-            <p class="text-gray-600 dark:text-gray-400 mb-8">Join a room to start chatting!</p>
+        <!-- Auth Screen -->
+        <div id="auth-screen" class="flex flex-col items-center justify-center p-8 h-full">
+            <h1 class="text-4xl font-bold mb-2 text-gray-800 dark:text-white">Welcome to Chat</h1>
+            <p class="text-gray-600 dark:text-gray-400 mb-8">Sign up or log in to continue</p>
             <div class="w-full max-w-sm">
                 <div class="mb-4">
-                    <label for="name-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Your Name</label>
-                    <input type="text" id="name-input" class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition" placeholder="Enter your name">
+                    <label for="email-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email</label>
+                    <input type="email" id="email-input" class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="your@email.com">
                 </div>
                 <div class="mb-6">
-                    <label for="room-id-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Room ID</label>
-                    <input type="text" id="room-id-input" class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition" placeholder="Enter or create a room ID">
+                    <label for="password-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password</label>
+                    <input type="password" id="password-input" class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="••••••••">
                 </div>
-                <div class="space-y-3">
-                    <button id="join-btn" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/50 transition-transform transform hover:scale-105">
-                        Join Chat
-                    </button>
-                    <button id="create-btn" class="w-full bg-gray-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-500/50 transition-transform transform hover:scale-105">
-                        Create New Room
-                    </button>
+                <div class="flex space-x-2">
+                    <button id="login-btn" class="flex-1 bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700">Login</button>
+                    <button id="signup-btn" class="flex-1 bg-gray-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-gray-700">Sign Up</button>
                 </div>
-            </div>
-             <div class="mt-8 text-center">
-                <p class="text-sm text-gray-500 dark:text-gray-400">Your User ID:</p>
-                <p id="user-id-display" class="text-xs text-gray-400 dark:text-gray-500 break-all p-2 bg-gray-50 dark:bg-gray-700 rounded-md mt-1"></p>
             </div>
         </div>
 
-        <div id="chat-screen" class="hidden flex-col h-full">
-            <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 shadow-sm">
-                <h2 class="text-xl font-bold">Room: <span id="room-id-display" class="text-indigo-500"></span></h2>
-                <button id="leave-btn" class="bg-red-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-600 focus:outline-none focus:ring-4 focus:ring-red-500/50 transition">
-                    Leave
-                </button>
+        <!-- Room Selection Screen -->
+        <div id="room-screen" class="hidden flex-col items-center justify-center p-8 h-full">
+            <div class="w-full flex justify-between items-center mb-8">
+                 <h1 class="text-3xl font-bold">Public Rooms</h1>
+                 <button id="logout-btn" class="bg-red-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-600">Logout</button>
+            </div>
+            <div class="w-full max-w-md">
+                <div class="mb-4">
+                    <label for="name-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Your Display Name</label>
+                    <input type="text" id="name-input" class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border rounded-lg" placeholder="Enter your name">
+                </div>
+                <div class="mb-4">
+                    <label for="room-id-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Room ID</label>
+                    <input type="text" id="room-id-input" class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border rounded-lg" placeholder="Enter or create a room ID">
+                </div>
+                <button id="join-btn" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700">Join Room</button>
+            </div>
+        </div>
+
+        <!-- Chat Screen -->
+        <div id="chat-screen" class="hidden h-full chat-container">
+            <!-- Sidebar -->
+            <div class="bg-gray-100 dark:bg-gray-700/50 border-r border-gray-200 dark:border-gray-600 flex flex-col">
+                <div class="p-4 border-b border-gray-200 dark:border-gray-600">
+                    <h2 class="font-bold text-lg">Online Users</h2>
+                </div>
+                <div id="user-list" class="flex-1 overflow-y-auto p-2"></div>
+                <button id="leave-btn" class="w-full bg-gray-600 text-white font-bold py-3 mt-auto hover:bg-gray-700">Leave Room</button>
             </div>
 
-            <div id="chat-messages" class="flex-1 p-4 overflow-y-auto">
+            <!-- Main Chat Area -->
+            <div class="flex flex-col h-full">
+                <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-600">
+                    <h2 class="text-xl font-bold">Room: <span id="room-id-display" class="text-indigo-500"></span></h2>
                 </div>
-
-            <div class="p-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-700">
-                <form id="message-form" class="flex items-center space-x-3">
-                    <input type="text" id="message-input" class="flex-1 w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-full focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition" placeholder="Type your message..." autocomplete="off">
-                    <button type="submit" class="bg-indigo-600 text-white rounded-full p-3 hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/50 transition-transform transform hover:scale-110">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                    </button>
-                </form>
+                <div id="chat-messages" class="flex-1 p-4 overflow-y-auto"></div>
+                <div class="p-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-600">
+                    <div id="typing-indicator" class="text-xs text-gray-500 italic h-4 mb-1"></div>
+                    <form id="message-form" class="flex items-center space-x-3">
+                        <input type="text" id="message-input" class="flex-1 w-full px-4 py-2 bg-white dark:bg-gray-700 border rounded-full outline-none" placeholder="Type your message...">
+                        <button type="submit" class="bg-indigo-600 text-white rounded-full p-3 hover:bg-indigo-700">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 
     <script type="module">
-        // --- Firebase Imports ---
+        // Firebase Imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, serverTimestamp, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, collection, addDoc, onSnapshot, query, serverTimestamp, orderBy, setDoc, deleteDoc, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- DOM Elements ---
-        const joinScreen = document.getElementById('join-screen');
-        const chatScreen = document.getElementById('chat-screen');
-        const joinBtn = document.getElementById('join-btn');
-        const createBtn = document.getElementById('create-btn'); // New button
-        const leaveBtn = document.getElementById('leave-btn');
-        const nameInput = document.getElementById('name-input');
-        const roomIdInput = document.getElementById('room-id-input');
-        const messageForm = document.getElementById('message-form');
-        const messageInput = document.getElementById('message-input');
-        const chatMessages = document.getElementById('chat-messages');
-        const roomIdDisplay = document.getElementById('room-id-display');
-        const userIdDisplay = document.getElementById('user-id-display');
-
-        // --- App State ---
-        let db;
-        let auth;
-        let currentUser = null;
-        let currentRoomId = null;
-        let unsubscribeMessages = null;
-
-        // --- Firebase Configuration ---
+        // Firebase Config - IMPORTANT: REPLACE WITH YOUR OWN
         const firebaseConfig = {
             apiKey: "AIzaSyAOaBjDdo5N7fPUTMqZ2aXZkn0JmK-5MpY",
             authDomain: "chatapp-2e099.firebaseapp.com",
@@ -116,172 +104,237 @@
             appId: "1:515625798757:web:a6a52b310493c658f84a8c"
         };
 
+        // DOM Elements
+        const authScreen = document.getElementById('auth-screen');
+        const roomScreen = document.getElementById('room-screen');
+        const chatScreen = document.getElementById('chat-screen');
+        // ... other elements
+        const emailInput = document.getElementById('email-input');
+        const passwordInput = document.getElementById('password-input');
+        const loginBtn = document.getElementById('login-btn');
+        const signupBtn = document.getElementById('signup-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const joinBtn = document.getElementById('join-btn');
+        const leaveBtn = document.getElementById('leave-btn');
+        const nameInput = document.getElementById('name-input');
+        const roomIdInput = document.getElementById('room-id-input');
+        const messageForm = document.getElementById('message-form');
+        const messageInput = document.getElementById('message-input');
+        const chatMessages = document.getElementById('chat-messages');
+        const roomIdDisplay = document.getElementById('room-id-display');
+        const userList = document.getElementById('user-list');
+        const typingIndicator = document.getElementById('typing-indicator');
 
-        // --- Firebase Initialization ---
-        async function initializeFirebase() {
-            try {
-                if (firebaseConfig.apiKey === "YOUR_API_KEY") {
-                    showError("Firebase configuration is missing. Please add your project's config to the script.");
-                    return;
-                }
-                const app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                await signInAnonymously(auth);
-                currentUser = auth.currentUser;
-                if (currentUser) {
-                    userIdDisplay.textContent = currentUser.uid;
+        // App State
+        let db, auth, currentUser = null;
+        let currentRoom = { id: null, type: null }; // type can be 'public' or 'private'
+        let unsubscribe = { messages: null, presence: null, typing: null };
+        let typingTimeout = null;
+
+        // --- Initialization ---
+        async function main() {
+            if (firebaseConfig.apiKey === "YOUR_API_KEY") {
+                showError("Firebase config is missing!");
+                return;
+            }
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            
+            onAuthStateChanged(auth, user => {
+                currentUser = user;
+                if (user) {
+                    showScreen('room');
+                    nameInput.value = localStorage.getItem('chat_username') || '';
                 } else {
-                     showError("Authentication failed. Please try again.");
+                    showScreen('auth');
                 }
-            } catch (error) {
-                console.error("Error initializing Firebase:", error);
-                showError("Could not initialize the application. Please check the console for details.");
-            }
-        }
-        
-        // --- UI Functions ---
-        function showChatScreen() {
-            joinScreen.classList.add('hidden');
-            chatScreen.classList.remove('hidden');
-            chatScreen.classList.add('flex');
+            });
         }
 
-        function showJoinScreen() {
+        // --- UI Navigation ---
+        function showScreen(screenName) {
+            authScreen.classList.add('hidden');
+            roomScreen.classList.add('hidden');
             chatScreen.classList.add('hidden');
-            chatScreen.classList.remove('flex');
-            joinScreen.classList.remove('hidden');
-            joinScreen.classList.add('flex');
-        }
-        
-        function showError(message) {
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'absolute top-5 left-1/2 -translate-x-1/2 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-            errorDiv.textContent = message;
-            document.body.appendChild(errorDiv);
-            setTimeout(() => errorDiv.remove(), 5000);
+            document.getElementById(`${screenName}-screen`).classList.remove('hidden');
+            document.getElementById(`${screenName}-screen`).classList.add('flex');
         }
 
-        // --- Chat Logic ---
-        function generateRoomId() {
-            return Math.random().toString(36).substring(2, 8).toUpperCase();
-        }
+        // --- Authentication ---
+        signupBtn.addEventListener('click', async () => {
+            try {
+                await createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
+            } catch (error) { showError(error.message); }
+        });
 
-        function createChatRoom() {
+        loginBtn.addEventListener('click', async () => {
+            try {
+                await signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
+            } catch (error) { showError(error.message); }
+        });
+
+        logoutBtn.addEventListener('click', () => signOut(auth));
+
+        // --- Chat Room Logic ---
+        joinBtn.addEventListener('click', () => joinRoom(roomIdInput.value.trim(), 'public'));
+        leaveBtn.addEventListener('click', leaveRoom);
+
+        async function joinRoom(roomId, type) {
             const name = nameInput.value.trim();
-            if (!name) {
-                showError("Please enter your name first.");
-                return;
-            }
-            const newRoomId = generateRoomId();
-            roomIdInput.value = newRoomId;
-            joinChatRoom();
+            if (!name || !roomId) return showError("Name and Room ID are required.");
+            localStorage.setItem('chat_username', name);
+
+            if (currentRoom.id) await leaveRoom();
+
+            currentRoom = { id: roomId, type: type };
+            roomIdDisplay.textContent = roomId;
+            
+            const basePath = type === 'public' ? `publicRooms/${roomId}` : `privateChats/${roomId}`;
+            
+            // Set presence
+            await setDoc(doc(db, `${basePath}/presence/${currentUser.uid}`), { name, online: true });
+
+            listenForMessages();
+            listenForPresence();
+            listenForTyping();
+
+            showScreen('chat');
         }
 
-        function joinChatRoom() {
-            const name = nameInput.value.trim();
-            const roomId = roomIdInput.value.trim();
-
-            if (!name || !roomId) {
-                showError("Please enter your name and a room ID.");
-                return;
+        async function leaveRoom() {
+            Object.values(unsubscribe).forEach(unsub => unsub && unsub());
+            
+            if (currentRoom.id && currentUser) {
+                const basePath = currentRoom.type === 'public' ? `publicRooms/${currentRoom.id}` : `privateChats/${currentRoom.id}`;
+                await deleteDoc(doc(db, `${basePath}/presence/${currentUser.uid}`));
             }
             
-            if (!currentUser) {
-                showError("You are not authenticated. Please wait a moment and try again.");
-                return;
-            }
-
-            currentRoomId = roomId;
-            localStorage.setItem('chat_username', name);
-            roomIdDisplay.textContent = currentRoomId;
-            showChatScreen();
-            listenForMessages();
-        }
-
-        function leaveChatRoom() {
-            if (unsubscribeMessages) {
-                unsubscribeMessages();
-                unsubscribeMessages = null;
-            }
-            currentRoomId = null;
+            currentRoom = { id: null, type: null };
             chatMessages.innerHTML = '';
-            showJoinScreen();
+            userList.innerHTML = '';
+            showScreen('room');
         }
 
-        async function sendMessage(event) {
-            event.preventDefault();
-            const messageText = messageInput.value.trim();
-
-            if (!messageText || !currentRoomId || !currentUser) return;
+        // --- Messaging ---
+        messageForm.addEventListener('submit', async e => {
+            e.preventDefault();
+            const text = messageInput.value.trim();
+            if (!text || !currentRoom.id) return;
 
             const name = localStorage.getItem('chat_username') || 'Anonymous';
-            
+            const basePath = currentRoom.type === 'public' ? `publicRooms/${currentRoom.id}` : `privateChats/${currentRoom.id}`;
+
             try {
-                const messagesCollectionPath = `/artifacts/global/public/data/chatRooms/${currentRoomId}/messages`;
-                await addDoc(collection(db, messagesCollectionPath), {
-                    text: messageText,
+                await addDoc(collection(db, `${basePath}/messages`), {
+                    text,
                     senderName: name,
                     senderId: currentUser.uid,
                     timestamp: serverTimestamp()
                 });
                 messageInput.value = '';
-            } catch (error) {
-                console.error("Error sending message:", error);
-                showError("Could not send your message.");
+                await updateTypingStatus(false);
+            } catch (error) { console.error("Send message error:", error); }
+        });
+
+        function listenForMessages() {
+            const basePath = currentRoom.type === 'public' ? `publicRooms/${currentRoom.id}` : `privateChats/${currentRoom.id}`;
+            const q = query(collection(db, `${basePath}/messages`), orderBy("timestamp"));
+            unsubscribe.messages = onSnapshot(q, snapshot => {
+                chatMessages.innerHTML = '';
+                snapshot.forEach(doc => displayMessage(doc.data()));
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            });
+        }
+
+        function displayMessage(msg) {
+            const isSelf = msg.senderId === currentUser.uid;
+            const el = document.createElement('div');
+            el.className = `flex mb-4 ${isSelf ? 'justify-end' : 'justify-start'}`;
+            el.innerHTML = `
+                <div class="max-w-xs md:max-w-md">
+                    <div class="text-xs text-gray-500 mb-1 ${isSelf ? 'text-right' : 'text-left'}">${msg.senderName}</div>
+                    <div class="px-4 py-3 rounded-2xl ${isSelf ? 'bg-indigo-500 text-white' : 'bg-gray-200 dark:bg-gray-600'}">
+                        <p class="text-sm break-words">${msg.text}</p>
+                    </div>
+                </div>`;
+            chatMessages.appendChild(el);
+        }
+
+        // --- Presence & User List ---
+        function listenForPresence() {
+            if (currentRoom.type !== 'public') {
+                userList.innerHTML = ''; // Only show user list for public rooms
+                return;
+            }
+            const presenceRef = collection(db, `publicRooms/${currentRoom.id}/presence`);
+            unsubscribe.presence = onSnapshot(presenceRef, snapshot => {
+                userList.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const user = doc.data();
+                    if (doc.id === currentUser.uid) return; // Don't list self
+                    const userEl = document.createElement('div');
+                    userEl.className = 'p-2 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md';
+                    userEl.textContent = user.name;
+                    userEl.onclick = () => startPrivateChat(doc.id, user.name);
+                    userList.appendChild(userEl);
+                });
+            });
+        }
+        
+        function startPrivateChat(otherUserId, otherUserName) {
+            const myId = currentUser.uid;
+            // Create a consistent room ID for the private chat
+            const privateRoomId = [myId, otherUserId].sort().join('_');
+            roomIdInput.value = `Private chat with ${otherUserName}`;
+            joinRoom(privateRoomId, 'private');
+        }
+
+        // --- Typing Indicator ---
+        messageInput.addEventListener('keyup', () => {
+            clearTimeout(typingTimeout);
+            updateTypingStatus(true);
+            typingTimeout = setTimeout(() => updateTypingStatus(false), 2000);
+        });
+
+        async function updateTypingStatus(isTyping) {
+            if (!currentRoom.id) return;
+            const basePath = currentRoom.type === 'public' ? `publicRooms/${currentRoom.id}` : `privateChats/${currentRoom.id}`;
+            const typingRef = doc(db, `${basePath}/typing/${currentUser.uid}`);
+            if (isTyping) {
+                await setDoc(typingRef, { name: localStorage.getItem('chat_username') });
+            } else {
+                await deleteDoc(typingRef);
             }
         }
 
-        function listenForMessages() {
-            if (!currentRoomId) return;
-            
-            const messagesCollectionPath = `/artifacts/global/public/data/chatRooms/${currentRoomId}/messages`;
-            const q = query(collection(db, messagesCollectionPath), orderBy("timestamp"));
-
-            unsubscribeMessages = onSnapshot(q, (querySnapshot) => {
-                const messages = [];
-                querySnapshot.forEach((doc) => {
-                    messages.push({ id: doc.id, ...doc.data() });
+        function listenForTyping() {
+            const basePath = currentRoom.type === 'public' ? `publicRooms/${currentRoom.id}` : `privateChats/${currentRoom.id}`;
+            const typingRef = collection(db, `${basePath}/typing`);
+            unsubscribe.typing = onSnapshot(typingRef, snapshot => {
+                const typers = [];
+                snapshot.forEach(doc => {
+                    if (doc.id !== currentUser.uid) typers.push(doc.data().name);
                 });
-                displayMessages(messages);
-            }, (error) => {
-                console.error("Error listening for messages: ", error);
-                showError("Lost connection to the chat room.");
+                if (typers.length > 0) {
+                    typingIndicator.textContent = `${typers.join(', ')} is typing...`;
+                } else {
+                    typingIndicator.textContent = '';
+                }
             });
         }
 
-        function displayMessages(messages) {
-            chatMessages.innerHTML = '';
-            messages.forEach(msg => {
-                const isCurrentUser = msg.senderId === currentUser.uid;
-                const messageElement = document.createElement('div');
-                messageElement.classList.add('flex', 'mb-4', isCurrentUser ? 'justify-end' : 'justify-start');
-
-                const messageContent = `
-                    <div class="max-w-xs md:max-w-md">
-                        <div class="text-xs text-gray-500 dark:text-gray-400 mb-1 ${isCurrentUser ? 'text-right' : 'text-left'}">${msg.senderName}</div>
-                        <div class="px-4 py-3 rounded-2xl ${isCurrentUser ? 'bg-indigo-500 text-white rounded-br-none' : 'bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-bl-none'}">
-                            <p class="text-sm break-words">${msg.text}</p>
-                        </div>
-                    </div>
-                `;
-                messageElement.innerHTML = messageContent;
-                chatMessages.appendChild(messageElement);
-            });
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+        // --- Utility ---
+        function showError(message) {
+            const el = document.createElement('div');
+            el.className = 'absolute top-5 left-1/2 -translate-x-1/2 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+            el.textContent = message;
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 4000);
         }
 
-        // --- Event Listeners ---
-        joinBtn.addEventListener('click', joinChatRoom);
-        createBtn.addEventListener('click', createChatRoom); // New event listener
-        leaveBtn.addEventListener('click', leaveChatRoom);
-        messageForm.addEventListener('submit', sendMessage);
-        
-        window.addEventListener('load', () => {
-            nameInput.value = localStorage.getItem('chat_username') || '';
-            initializeFirebase();
-        });
-
+        // --- Start App ---
+        main();
     </script>
 </body>
 </html>

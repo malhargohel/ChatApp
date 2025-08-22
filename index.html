@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Chat App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Simple scrollbar styling */
+        #chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+        #chat-messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        #chat-messages::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        #chat-messages::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex items-center justify-center min-h-screen">
+
+    <div id="app-container" class="w-full max-w-2xl mx-auto bg-white dark:bg-gray-800 shadow-2xl rounded-2xl flex flex-col h-[90vh]">
+
+        <!-- Join Screen -->
+        <div id="join-screen" class="flex flex-col items-center justify-center p-8 h-full">
+            <h1 class="text-4xl font-bold mb-2 text-gray-800 dark:text-white">Chat Rooms</h1>
+            <p class="text-gray-600 dark:text-gray-400 mb-8">Join a room to start chatting!</p>
+            <div class="w-full max-w-sm">
+                <div class="mb-4">
+                    <label for="name-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Your Name</label>
+                    <input type="text" id="name-input" class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition" placeholder="Enter your name">
+                </div>
+                <div class="mb-6">
+                    <label for="room-id-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Room ID</label>
+                    <input type="text" id="room-id-input" class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition" placeholder="Enter a room ID">
+                </div>
+                <button id="join-btn" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/50 transition-transform transform hover:scale-105">
+                    Join Chat
+                </button>
+            </div>
+             <div class="mt-8 text-center">
+                <p class="text-sm text-gray-500 dark:text-gray-400">Your User ID:</p>
+                <p id="user-id-display" class="text-xs text-gray-400 dark:text-gray-500 break-all p-2 bg-gray-50 dark:bg-gray-700 rounded-md mt-1"></p>
+            </div>
+        </div>
+
+        <!-- Chat Screen -->
+        <div id="chat-screen" class="hidden flex-col h-full">
+            <!-- Header -->
+            <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 shadow-sm">
+                <h2 class="text-xl font-bold">Room: <span id="room-id-display" class="text-indigo-500"></span></h2>
+                <button id="leave-btn" class="bg-red-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-600 focus:outline-none focus:ring-4 focus:ring-red-500/50 transition">
+                    Leave
+                </button>
+            </div>
+
+            <!-- Messages -->
+            <div id="chat-messages" class="flex-1 p-4 overflow-y-auto">
+                <!-- Messages will be dynamically inserted here -->
+            </div>
+
+            <!-- Message Input -->
+            <div class="p-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-700">
+                <form id="message-form" class="flex items-center space-x-3">
+                    <input type="text" id="message-input" class="flex-1 w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-full focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition" placeholder="Type your message..." autocomplete="off">
+                    <button type="submit" class="bg-indigo-600 text-white rounded-full p-3 hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/50 transition-transform transform hover:scale-110">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // --- Firebase Imports ---
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, collection, addDoc, onSnapshot, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- DOM Elements ---
+        const joinScreen = document.getElementById('join-screen');
+        const chatScreen = document.getElementById('chat-screen');
+        const joinBtn = document.getElementById('join-btn');
+        const leaveBtn = document.getElementById('leave-btn');
+        const nameInput = document.getElementById('name-input');
+        const roomIdInput = document.getElementById('room-id-input');
+        const messageForm = document.getElementById('message-form');
+        const messageInput = document.getElementById('message-input');
+        const chatMessages = document.getElementById('chat-messages');
+        const roomIdDisplay = document.getElementById('room-id-display');
+        const userIdDisplay = document.getElementById('user-id-display');
+
+
+        // --- App State ---
+        let db;
+        let auth;
+        let currentUser = null;
+        let currentRoomId = null;
+        let unsubscribeMessages = null; // To store the listener detachment function
+
+        // --- Firebase Initialization ---
+        async function initializeFirebase() {
+            try {
+                // These global variables are provided by the environment.
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-chat-app';
+                const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+
+                if (!firebaseConfig.apiKey) {
+                    showError("Firebase configuration is missing. This app cannot connect to the backend.");
+                    return;
+                }
+
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                // Listen for authentication state changes.
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        // User is signed in.
+                        currentUser = user;
+                        userIdDisplay.textContent = currentUser.uid;
+                    } else {
+                        // User is signed out, try to sign in.
+                        await authenticateUser();
+                    }
+                });
+
+            } catch (error) {
+                console.error("Error initializing Firebase:", error);
+                showError("Could not initialize the application. Please check the console for details.");
+            }
+        }
+        
+        async function authenticateUser() {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Authentication failed:", error);
+                showError("Could not authenticate the user.");
+            }
+        }
+
+
+        // --- UI Functions ---
+        function showChatScreen() {
+            joinScreen.classList.add('hidden');
+            chatScreen.classList.remove('hidden');
+            chatScreen.classList.add('flex');
+        }
+
+        function showJoinScreen() {
+            chatScreen.classList.add('hidden');
+            chatScreen.classList.remove('flex');
+            joinScreen.classList.remove('hidden');
+            joinScreen.classList.add('flex');
+        }
+        
+        function showError(message) {
+            // A simple, non-blocking error display.
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'absolute top-5 left-1/2 -translate-x-1/2 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg';
+            errorDiv.textContent = message;
+            document.body.appendChild(errorDiv);
+            setTimeout(() => errorDiv.remove(), 5000);
+        }
+
+        // --- Chat Logic ---
+        function joinChatRoom() {
+            const name = nameInput.value.trim();
+            const roomId = roomIdInput.value.trim();
+
+            if (!name || !roomId) {
+                showError("Please enter your name and a room ID.");
+                return;
+            }
+            
+            if (!currentUser) {
+                showError("You are not authenticated. Please wait a moment and try again.");
+                return;
+            }
+
+            currentRoomId = roomId;
+            localStorage.setItem('chat_username', name); // Save name for convenience
+
+            roomIdDisplay.textContent = currentRoomId;
+            showChatScreen();
+            listenForMessages();
+        }
+
+        function leaveChatRoom() {
+            // Detach the Firestore listener to stop receiving updates.
+            if (unsubscribeMessages) {
+                unsubscribeMessages();
+                unsubscribeMessages = null;
+            }
+            currentRoomId = null;
+            chatMessages.innerHTML = ''; // Clear messages from the UI
+            showJoinScreen();
+        }
+
+        async function sendMessage(event) {
+            event.preventDefault();
+            const messageText = messageInput.value.trim();
+
+            if (!messageText || !currentRoomId || !currentUser) return;
+
+            const name = localStorage.getItem('chat_username') || 'Anonymous';
+            
+            try {
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-chat-app';
+                const messagesCollectionPath = `/artifacts/${appId}/public/data/chatRooms/${currentRoomId}/messages`;
+
+                await addDoc(collection(db, messagesCollectionPath), {
+                    text: messageText,
+                    senderName: name,
+                    senderId: currentUser.uid,
+                    timestamp: serverTimestamp() // Use server time for consistency
+                });
+                messageInput.value = ''; // Clear input field
+            } catch (error) {
+                console.error("Error sending message:", error);
+                showError("Could not send your message.");
+            }
+        }
+
+        function listenForMessages() {
+            if (!currentRoomId) return;
+            
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-chat-app';
+            const messagesCollectionPath = `/artifacts/${appId}/public/data/chatRooms/${currentRoomId}/messages`;
+
+            const q = query(collection(db, messagesCollectionPath));
+
+            // onSnapshot returns an unsubscribe function.
+            unsubscribeMessages = onSnapshot(q, (querySnapshot) => {
+                const messages = [];
+                querySnapshot.forEach((doc) => {
+                    messages.push({ id: doc.id, ...doc.data() });
+                });
+                
+                // Sort messages by timestamp client-side
+                messages.sort((a, b) => (a.timestamp?.toMillis() || 0) - (b.timestamp?.toMillis() || 0));
+
+                displayMessages(messages);
+            }, (error) => {
+                console.error("Error listening for messages: ", error);
+                showError("Lost connection to the chat room.");
+            });
+        }
+
+        function displayMessages(messages) {
+            chatMessages.innerHTML = ''; // Clear existing messages
+            messages.forEach(msg => {
+                const isCurrentUser = msg.senderId === currentUser.uid;
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('flex', 'mb-4', isCurrentUser ? 'justify-end' : 'justify-start');
+
+                const messageContent = `
+                    <div class="max-w-xs md:max-w-md">
+                        <div class="text-xs text-gray-500 dark:text-gray-400 mb-1 ${isCurrentUser ? 'text-right' : 'text-left'}">${msg.senderName}</div>
+                        <div class="px-4 py-3 rounded-2xl ${isCurrentUser ? 'bg-indigo-500 text-white rounded-br-none' : 'bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-bl-none'}">
+                            <p class="text-sm">${msg.text}</p>
+                        </div>
+                    </div>
+                `;
+                messageElement.innerHTML = messageContent;
+                chatMessages.appendChild(messageElement);
+            });
+            // Auto-scroll to the bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+
+        // --- Event Listeners ---
+        joinBtn.addEventListener('click', joinChatRoom);
+        leaveBtn.addEventListener('click', leaveChatRoom);
+        messageForm.addEventListener('submit', sendMessage);
+        
+        // Load saved username
+        window.addEventListener('load', () => {
+            nameInput.value = localStorage.getItem('chat_username') || '';
+            initializeFirebase();
+        });
+
+    </script>
+</body>
+</html>

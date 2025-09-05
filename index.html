@@ -44,9 +44,34 @@
                         <svg id="eye-off-icon-login" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path><line x1="2" x2="22" y1="2" y2="22"></line></svg>
                     </span>
                 </div>
-                <div class="flex space-x-2">
+                <div class="flex space-x-2 mb-4">
                     <button id="login-btn" class="flex-1 bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700">Login</button>
                     <button id="signup-btn" class="flex-1 bg-gray-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-gray-700">Sign Up</button>
+                </div>
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-300 dark:border-gray-600"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-white dark:bg-gray-800 text-gray-500">Or continue with</span>
+                    </div>
+                </div>
+                <div class="mt-4 space-y-3">
+                    <button id="google-signin-btn" class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
+                        <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        Continue with Google
+                    </button>
+                   <!-- <button id="phone-signin-btn" class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                        </svg>
+                        Continue with Phone
+                    </button> -->
                 </div>
             </div>
         </div>
@@ -136,10 +161,47 @@
         </div>
     </div>
 
+    <!-- Phone Authentication Modal -->
+    <div id="phone-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-sm">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Phone Sign In</h2>
+                <button id="close-phone-modal-btn" class="text-gray-400 hover:text-gray-600 text-3xl">&times;</button>
+            </div>
+            
+            <!-- Step 1: Phone Number Input -->
+            <div id="phone-step-1" class="space-y-4">
+                <div>
+                    <label for="phone-number" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phone Number</label>
+                    <input type="tel" id="phone-number" class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border rounded-lg" placeholder="+61412345678" value="+61">
+                </div>
+                <div>
+                    <label for="display-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Display Name</label>
+                    <input type="text" id="display-name" class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border rounded-lg" placeholder="Enter your name">
+                </div>
+                <div id="recaptcha-container" class="flex justify-center"></div>
+                <button id="send-code-btn" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700">Send Verification Code</button>
+            </div>
+
+            <!-- Step 2: Verification Code Input -->
+            <div id="phone-step-2" class="hidden space-y-4">
+                <p class="text-sm text-gray-600 dark:text-gray-400">Enter the 6-digit code sent to your phone</p>
+                <div>
+                    <label for="verification-code" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Verification Code</label>
+                    <input type="text" id="verification-code" class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border rounded-lg text-center text-lg tracking-widest" placeholder="123456" maxlength="6">
+                </div>
+                <div class="flex space-x-2">
+                    <button id="verify-code-btn" class="flex-1 bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700">Verify Code</button>
+                    <button id="resend-code-btn" class="flex-1 bg-gray-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-gray-700">Resend</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         // Firebase Imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, PhoneAuthProvider, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, collection, addDoc, onSnapshot, query, serverTimestamp, orderBy, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Firebase Config
@@ -151,35 +213,6 @@
             messagingSenderId: "515625798757",
             appId: "1:515625798757:web:a6a52b310493c658f84a8c"
         };
-        
-        // =================================================================================
-        // FIX FOR PERMISSION ERRORS
-        // The "Missing or insufficient permissions" error is caused by your
-        // Firestore Security Rules. Please go to your Firebase project:
-        // Firestore Database -> Rules -> Edit Rules
-        // And replace the existing rules with the following:
-        /*
-        
-        rules_version = '2';
-        service cloud.firestore {
-          match /databases/{database}/documents {
-        
-            // Allow any authenticated user to access public rooms and their subcollections
-            match /publicRooms/{roomId}/{document=**} {
-              allow read, write: if request.auth != null;
-            }
-        
-            // Allow only the participants of a private chat to access its subcollections
-            // (messages, presence, typing)
-            match /privateChats/{chatId}/{subcollection}/{docId} {
-              allow read, write: if request.auth != null && request.auth.uid in chatId.split('_');
-            }
-          }
-        }
-
-        */
-        // =================================================================================
-
 
         // DOM Elements
         const authScreen = document.getElementById('auth-screen');
@@ -208,12 +241,27 @@
         const signupEmailInput = document.getElementById('signup-email');
         const signupPasswordInput = document.getElementById('signup-password');
         const signupReenterPasswordInput = document.getElementById('signup-reenter-password');
+        const googleSigninBtn = document.getElementById('google-signin-btn');
+        const phoneSigninBtn = document.querySelector('#phone-signin-btn'); // Note: This button is commented out in your HTML
+        const phoneModal = document.getElementById('phone-modal');
+        const closePhoneModalBtn = document.getElementById('close-phone-modal-btn');
+        const phoneNumberInput = document.getElementById('phone-number');
+        const displayNameInput = document.getElementById('display-name');
+        const recaptchaContainer = document.getElementById('recaptcha-container');
+        const sendCodeBtn = document.getElementById('send-code-btn');
+        const phoneStep1 = document.getElementById('phone-step-1');
+        const phoneStep2 = document.getElementById('phone-step-2');
+        const verificationCodeInput = document.getElementById('verification-code');
+        const verifyCodeBtn = document.getElementById('verify-code-btn');
+        const resendCodeBtn = document.getElementById('resend-code-btn');
 
         // App State
         let db, auth, currentUser = null;
         let currentRoom = { id: null, type: null };
         let unsubscribe = { messages: null, presence: null, typing: null };
         let typingTimeout = null;
+        let recaptchaVerifier = null;
+        let confirmationResult = null;
 
         // --- Initialization ---
         async function main() {
@@ -224,7 +272,193 @@
             const app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
+
+            // =========================================================================
+            // MOVED ALL EVENT LISTENERS HERE - AFTER AUTH AND DB ARE INITIALIZED
+            // =========================================================================
+
+            setupPasswordToggle('login-password-toggle', 'password-input', 'eye-icon-login', 'eye-off-icon-login');
+            setupPasswordToggle('signup-password-toggle', 'signup-password', 'eye-icon-signup', 'eye-off-icon-signup');
+        
+            // --- Authentication & Modal ---
+            signupBtn.addEventListener('click', () => {
+                signupModal.classList.remove('hidden');
+            });
+        
+            closeModalBtn.addEventListener('click', () => {
+                signupModal.classList.add('hidden');
+            });
+        
+            createAccountBtn.addEventListener('click', async () => {
+                const username = signupUsernameInput.value.trim();
+                const email = signupEmailInput.value.trim();
+                const password = signupPasswordInput.value.trim();
+                const reenterPassword = signupReenterPasswordInput.value.trim();
+        
+                if (!username || !email || !password || !reenterPassword) {
+                    return showError("Please fill out all fields.");
+                }
+                if (password !== reenterPassword) {
+                    return showError("Passwords do not match.");
+                }
+        
+                try {
+                    await createUserWithEmailAndPassword(auth, email, password);
+                    localStorage.setItem('chat_username', username);
+                    signupModal.classList.add('hidden');
+                } catch (error) {
+                    showError(error.message);
+                }
+            });
             
+            loginBtn.addEventListener('click', async () => {
+                const email = emailInput.value.trim();
+                const password = passwordInput.value.trim();
+                if (!email || !password) {
+                    showError("Please enter a valid email and password.");
+                    return;
+                }
+                try {
+                    await signInWithEmailAndPassword(auth, email, password);
+                } catch (error) { showError(error.message); }
+            });
+        
+            logoutBtn.addEventListener('click', () => signOut(auth));
+            
+            // Google Sign-in
+            googleSigninBtn.addEventListener('click', async () => {
+                try {
+                    const provider = new GoogleAuthProvider();
+                    const result = await signInWithPopup(auth, provider);
+                    
+                    const user = result.user;
+                    const displayName = user.displayName || user.email.split('@')[0];
+                    
+                    localStorage.setItem('chat_username', displayName);
+                } catch (error) {
+                    console.error('Google sign-in error:', error);
+                    if (error.code === 'auth/popup-closed-by-user') {
+                        showError('Sign-in was cancelled');
+                    } else if (error.code === 'auth/popup-blocked') {
+                        showError('Pop-up was blocked. Please allow pop-ups for this site.');
+                    } else {
+                        showError(error.message);
+                    }
+                }
+            });
+            
+            // Phone Sign-in
+            if (phoneSigninBtn) {
+                phoneSigninBtn.addEventListener('click', () => {
+                    phoneModal.classList.remove('hidden');
+                    initializeRecaptcha();
+                });
+            }
+        
+            closePhoneModalBtn.addEventListener('click', () => {
+                phoneModal.classList.add('hidden');
+                resetPhoneModal();
+            });
+        
+            sendCodeBtn.addEventListener('click', async () => {
+                const phoneNumber = phoneNumberInput.value.trim();
+                const displayName = displayNameInput.value.trim();
+                
+                if (!phoneNumber || !displayName) {
+                    showError("Please enter both phone number and display name.");
+                    return;
+                }
+        
+                try {
+                    sendCodeBtn.disabled = true;
+                    sendCodeBtn.textContent = 'Sending...';
+                    
+                    const appVerifier = recaptchaVerifier;
+                    confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
+                    
+                    localStorage.setItem('chat_username', displayName);
+                    
+                    phoneStep1.classList.add('hidden');
+                    phoneStep2.classList.remove('hidden');
+                    
+                } catch (error) {
+                    console.error('Phone sign-in error:', error);
+                    recaptchaVerifier.render().then(widgetId => {
+                        grecaptcha.reset(widgetId);
+                    });
+                    showError(error.message);
+                    sendCodeBtn.disabled = false;
+                    sendCodeBtn.textContent = 'Send Verification Code';
+                }
+            });
+        
+            verifyCodeBtn.addEventListener('click', async () => {
+                const code = verificationCodeInput.value.trim();
+                
+                if (!code || code.length !== 6) {
+                    showError("Please enter a valid 6-digit code.");
+                    return;
+                }
+        
+                try {
+                    verifyCodeBtn.disabled = true;
+                    verifyCodeBtn.textContent = 'Verifying...';
+                    
+                    await confirmationResult.confirm(code);
+                    
+                    phoneModal.classList.add('hidden');
+                    resetPhoneModal();
+                    
+                } catch (error) {
+                    console.error('Code verification error:', error);
+                    showError("Invalid verification code. Please try again.");
+                    verifyCodeBtn.disabled = false;
+                    verifyCodeBtn.textContent = 'Verify Code';
+                }
+            });
+        
+            resendCodeBtn.addEventListener('click', async () => {
+                const phoneNumber = phoneNumberInput.value.trim();
+                
+                try {
+                    resendCodeBtn.disabled = true;
+                    resendCodeBtn.textContent = 'Sending...';
+                    
+                    const appVerifier = recaptchaVerifier;
+                    confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
+                    
+                    showError("New verification code sent!");
+                    resendCodeBtn.disabled = false;
+                    resendCodeBtn.textContent = 'Resend';
+                    
+                } catch (error) {
+                    console.error('Resend code error:', error);
+                    showError(error.message);
+                    resendCodeBtn.disabled = false;
+                    resendCodeBtn.textContent = 'Resend';
+                }
+            });
+        
+            // --- Chat Room Logic ---
+            joinBtn.addEventListener('click', () => joinRoom(roomIdInput.value.trim(), 'public'));
+            createRoomBtn.addEventListener('click', createChatRoom);
+            leaveBtn.addEventListener('click', leaveRoom);
+        
+            // --- Messaging ---
+            messageForm.addEventListener('submit', handleMessageSubmit);
+        
+            // --- Typing Indicator ---
+            messageInput.addEventListener('keyup', () => {
+                clearTimeout(typingTimeout);
+                updateTypingStatus(true);
+                typingTimeout = setTimeout(() => updateTypingStatus(false), 2000);
+            });
+            
+            // =========================================================================
+            // END OF MOVED EVENT LISTENERS
+            // =========================================================================
+
+            // Auth state listener is last, to control UI flow
             onAuthStateChanged(auth, user => {
                 currentUser = user;
                 if (user) {
@@ -264,59 +498,43 @@
                 }
             });
         }
-        setupPasswordToggle('login-password-toggle', 'password-input', 'eye-icon-login', 'eye-off-icon-login');
-        setupPasswordToggle('signup-password-toggle', 'signup-password', 'eye-icon-signup', 'eye-off-icon-signup');
-
-        // --- Authentication & Modal ---
-        signupBtn.addEventListener('click', () => {
-            signupModal.classList.remove('hidden');
-        });
-
-        closeModalBtn.addEventListener('click', () => {
-            signupModal.classList.add('hidden');
-        });
-
-        createAccountBtn.addEventListener('click', async () => {
-            const username = signupUsernameInput.value.trim();
-            const email = signupEmailInput.value.trim();
-            const password = signupPasswordInput.value.trim();
-            const reenterPassword = signupReenterPasswordInput.value.trim();
-
-            if (!username || !email || !password || !reenterPassword) {
-                return showError("Please fill out all fields.");
-            }
-            if (password !== reenterPassword) {
-                return showError("Passwords do not match.");
-            }
-
-            try {
-                await createUserWithEmailAndPassword(auth, email, password);
-                localStorage.setItem('chat_username', username);
-                signupModal.classList.add('hidden');
-            } catch (error) {
-                showError(error.message);
-            }
-        });
         
-        loginBtn.addEventListener('click', async () => {
-            const email = emailInput.value.trim();
-            const password = passwordInput.value.trim();
-            if (!email || !password) {
-                showError("Please enter a valid email and password.");
-                return;
+        function initializeRecaptcha() {
+            // Check if the container is visible and not already initialized
+            if (!recaptchaVerifier) {
+                recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+                    'size': 'normal',
+                    'callback': (response) => {
+                        sendCodeBtn.disabled = false;
+                    },
+                    'expired-callback': () => {
+                        sendCodeBtn.disabled = true;
+                    }
+                });
+                recaptchaVerifier.render();
             }
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-            } catch (error) { showError(error.message); }
-        });
+        }
 
-        logoutBtn.addEventListener('click', () => signOut(auth));
+        function resetPhoneModal() {
+            phoneStep1.classList.remove('hidden');
+            phoneStep2.classList.add('hidden');
+            phoneNumberInput.value = '+61';
+            displayNameInput.value = '';
+            verificationCodeInput.value = '';
+            sendCodeBtn.disabled = true;
+            sendCodeBtn.textContent = 'Send Verification Code';
+            verifyCodeBtn.disabled = false;
+            verifyCodeBtn.textContent = 'Verify Code';
+            resendCodeBtn.disabled = false;
+            resendCodeBtn.textContent = 'Resend';
+            
+            if (recaptchaVerifier) {
+                recaptchaVerifier.clear();
+                recaptchaVerifier = null;
+            }
+        }
         
         // --- Chat Room Logic ---
-        joinBtn.addEventListener('click', () => joinRoom(roomIdInput.value.trim(), 'public'));
-        createRoomBtn.addEventListener('click', createChatRoom);
-        leaveBtn.addEventListener('click', leaveRoom);
-
         function createChatRoom() {
             const name = nameInput.value.trim();
             if (!name) {
@@ -364,7 +582,7 @@
         }
 
         // --- Messaging ---
-        messageForm.addEventListener('submit', async e => {
+        async function handleMessageSubmit(e) {
             e.preventDefault();
             const text = messageInput.value.trim();
             if (!text || !currentRoom.id) return;
@@ -382,7 +600,7 @@
                 messageInput.value = '';
                 await updateTypingStatus(false);
             } catch (error) { console.error("Send message error:", error); }
-        });
+        }
 
         function listenForMessages() {
             const basePath = currentRoom.type === 'public' ? `publicRooms/${currentRoom.id}` : `privateChats/${currentRoom.id}`;
@@ -437,12 +655,6 @@
         }
 
         // --- Typing Indicator ---
-        messageInput.addEventListener('keyup', () => {
-            clearTimeout(typingTimeout);
-            updateTypingStatus(true);
-            typingTimeout = setTimeout(() => updateTypingStatus(false), 2000);
-        });
-
         async function updateTypingStatus(isTyping) {
             if (!currentRoom.id) return;
             const basePath = currentRoom.type === 'public' ? `publicRooms/${currentRoom.id}` : `privateChats/${currentRoom.id}`;
